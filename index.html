@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link href="css/css.css" rel="stylesheet" type="text/css">
+        <script type="text/javascript" src="js/jquery.min.js"></script>
+        <title>视界无镜年会小游戏互动抽签</title>
+    </head>
+    <body>
+        <div class="image-container">
+            <div>
+                <img src="img/桌号1.png" class="table-img" data-id="1" alt="桌号1">
+                <img src="img/桌号2.png" class="table-img" data-id="2" alt="桌号2">
+                <img src="img/桌号3.png" class="table-img" data-id="3" alt="桌号3">
+                <img src="img/桌号4.png" class="table-img" data-id="4" alt="桌号4">
+                <img src="img/桌号5.png" class="table-img" data-id="5" alt="桌号5">
+                <img src="img/桌号6.png" class="table-img" data-id="6" alt="桌号6">
+            </div>
+            <img src="img/视界无镜年会小游戏互动抽签.png" class="hdbq">
+            <ul class="prizeList"></ul>
+            <div class="submit" data-id="0">开始</div>
+        </div>
+        
+
+        <script type="text/javascript">
+            var currentTableId = null; // 全局变量，用于存储当前选中的桌号
+            var interval; // 用于存储定时器
+            function getArrayItems(arr, num) {
+                var temp_array = [];
+                for (var index in arr) {
+                    temp_array.push(arr[index]);
+                }
+                var return_array = [];
+                for (var i = 0; i < num; i++) {
+                    if (temp_array.length > 0) {
+                        var arrIndex = Math.floor(Math.random() * temp_array.length);
+                        return_array[i] = temp_array[arrIndex];
+                        temp_array.splice(arrIndex, 1);
+                    } else {
+                        break;
+                    }
+                }
+                return return_array;
+            }
+
+            $(".table-img").click(function() {
+                clearInterval(interval);
+                $(".submit").data("id", "0").text("开始");
+                $(".prizeList").empty();
+                currentTableId = $(this).data("id"); // 更新当前选中的桌号
+            });
+            // 设置桌号按钮的点击事件
+            // $(".table-btn").click(function() {
+            //     clearInterval(interval);
+            //     $(".submit").data("id", "0").text("开始");
+            //     $(".prizeList").empty();
+            //     currentTableId = $(this).data("id"); // 更新当前选中的桌号
+            // });
+        
+            // 设置开始/停止按钮的点击事件
+            $(".submit").click(function() {
+                var status = $(this).data("id");
+                if (status == 0 && currentTableId !== null) {
+                    $.get("data.json", {}, function(data) {
+                        if (data && data.code == "1") {
+                            var filteredData = data.data.filter(function(item) {
+                                return item.id == currentTableId;
+                            });
+                            function times() {
+                                var res = getArrayItems(filteredData, 1);
+                                var str = '';
+                                for (var o in res) {
+                                    var num = parseInt(o) + 1;
+                                    str += '<li class="centered-content" data-id="' + res[o].id + '">' +'桌号'+ res[o].id + '：<span>' + res[o].name + '</span><label></label></li>';
+                                }
+                                $(".prizeList").html(str);
+                            }
+                            interval = setInterval(times, 10);
+                        } else {
+                            alert('Ajax error!');
+                        }
+                    }, 'json');
+                    $(this).data("id", "1");
+                    $(this).text("停止");
+                } else {
+                    clearInterval(interval);
+                    $(this).data("id", "0");
+                    $(this).text("开始");
+                }
+            });
+        </script>
+        
+    </body>
+</html>
